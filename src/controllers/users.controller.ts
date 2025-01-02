@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { UserBody } from '../middlewares/users.middleware'
+import { LoginRequest, UserBody } from '../middlewares/users.middleware'
 import { knex } from '../database'
 import { randomUUID } from 'node:crypto'
 
@@ -17,7 +17,24 @@ export async function createNewUser(
     password,
   })
 
-  reply.cookie('token', id, {
+  return reply.status(201).send()
+}
+
+export async function login(request: LoginRequest, reply: FastifyReply) {
+  const response = await knex('users')
+    .where({
+      email: request.email,
+      password: request.password,
+    })
+    .first()
+
+  if (!response) {
+    return reply.status(401).send({
+      error: 'Invalid email or password. Please try again.',
+    })
+  }
+
+  reply.cookie('token', response.id, {
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 7 days,
   })
