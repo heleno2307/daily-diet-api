@@ -8,12 +8,13 @@ import {
 } from '../controllers/snacks.controller'
 import {
   checkSnackExists,
-  cookiesValidation,
   createNewSnackParams,
   updateSnackParams,
   deleteSnackParams,
   snacksQueryParams,
 } from '../middlewares/snacks.middlewares'
+
+import { cookiesValidation } from '../middlewares/global.middlewares'
 
 export async function snacksRoutes(app: FastifyInstance) {
   app.addHook('preHandler', cookiesValidation)

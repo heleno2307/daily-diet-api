@@ -41,3 +41,16 @@ export async function login(request: LoginRequest, reply: FastifyReply) {
 
   return reply.status(201).send()
 }
+
+export async function getUser(request: FastifyRequest, reply: FastifyReply) {
+  const userId = request.cookies.token
+  const snack = await knex('users')
+    .where({
+      id: userId,
+    })
+    .first()
+
+  return reply.status(200).send({
+    snack,
+  })
+}

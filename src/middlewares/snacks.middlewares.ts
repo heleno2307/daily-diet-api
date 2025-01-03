@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { routeSchemaValidation } from '../utils/route-shema-validation'
-import { isUserExisting } from './global.middlewares'
 import { knex } from '../database'
 
 const createNewSnackSchema = z.object({
@@ -78,23 +77,4 @@ export async function snacksQueryParams(
   })
 
   routeSchemaValidation(queryParamsSchema, request.query, reply)
-}
-
-export async function cookiesValidation(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
-  const token = request.cookies.token
-
-  if (!token) {
-    return reply.status(401).send({
-      error: 'Unauthorized.',
-    })
-  }
-
-  if (!(await isUserExisting(undefined, undefined, token))) {
-    return reply.status(400).send({
-      error: 'A user with the provided name, email, or ID already exists.',
-    })
-  }
 }
