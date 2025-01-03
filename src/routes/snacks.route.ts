@@ -15,9 +15,15 @@ import {
 } from '../middlewares/snacks.middlewares'
 
 import { cookiesValidation } from '../middlewares/global.middlewares'
+import { metricsRoutes } from './metrics.route'
 
 export async function snacksRoutes(app: FastifyInstance) {
   app.addHook('preHandler', cookiesValidation)
+
+  // Sub rota de metricas
+  app.register(metricsRoutes, {
+    prefix: 'metrics',
+  })
 
   // Cria uma nova snack
   app.post(
