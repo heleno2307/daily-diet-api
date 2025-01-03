@@ -39,7 +39,7 @@ export async function login(request: LoginRequest, reply: FastifyReply) {
     maxAge: 60 * 60 * 24 * 7, // 7 days,
   })
 
-  return reply.status(201).send()
+  return reply.status(204).send()
 }
 
 export async function getUser(request: FastifyRequest, reply: FastifyReply) {
