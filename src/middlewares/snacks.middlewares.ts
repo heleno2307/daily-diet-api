@@ -8,7 +8,7 @@ const createNewSnackSchema = z.object({
   name: z.string(),
   description: z.string(),
   date: z.coerce.date(),
-  isWithinDiet: z.boolean().optional(),
+  isWithinDiet: z.boolean(),
 })
 const updateSnackSchema = z.object({
   name: z.string().optional(),
@@ -66,6 +66,18 @@ export async function checkSnackExists(
       error: `Snack with id "${snackId}" not found.`,
     })
   }
+}
+
+export async function snacksQueryParams(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const queryParamsSchema = z.object({
+    isWithinDiet: z.coerce.boolean().optional(),
+    search: z.string().optional(),
+  })
+
+  routeSchemaValidation(queryParamsSchema, request.query, reply)
 }
 
 export async function cookiesValidation(

@@ -63,3 +63,60 @@ export async function deleteSnack(
 
   return reply.status(204).send()
 }
+
+export async function getSnackById(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { id } = request.params as { id: string }
+  const userId = request.cookies.token
+  const snack = await knex('snacks')
+    .where({
+      id,
+      userId,
+    })
+    .first()
+
+  return reply.status(200).send({
+    snack,
+  })
+}
+
+export async function getSnacks(request: FastifyRequest, reply: FastifyReply) {
+  const { search, isWithinDiet } = request.query as {
+    search?: string
+    isWithinDiet?: boolean | string
+  }
+
+  try {
+    const snacksQuery = knex('snacks')
+    const userId = request.cookies.token // ID do usuário
+
+    // Adiciona filtro de busca pelo nome ou descrição do snack
+    if (search) {
+      snacksQuery.where(function () {
+        this.where('name', 'like', `%${search}%`).orWhere(
+          'description',
+          'like',
+          `%${search}%`,
+        )
+      })
+    }
+
+    // Adiciona filtro para snacks dentro ou fora da dieta
+    if (isWithinDiet !== undefined) {
+      const isWithinDietValue =
+        isWithinDiet === 'true' || isWithinDiet === '1' ? 1 : 0
+      snacksQuery.andWhere('isWithinDiet', isWithinDietValue)
+    }
+
+    snacksQuery.andWhere('userId', userId)
+
+    const snacks = await snacksQuery
+
+    return reply.status(200).send({ snacks })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({ error: 'Erro ao buscar snacks' })
+  }
+}

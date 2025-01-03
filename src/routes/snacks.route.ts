@@ -2,7 +2,9 @@ import { FastifyInstance } from 'fastify'
 import {
   createNewSnack,
   deleteSnack,
+  getSnackById,
   updateSnack,
+  getSnacks,
 } from '../controllers/snacks.controller'
 import {
   checkSnackExists,
@@ -10,6 +12,7 @@ import {
   createNewSnackParams,
   updateSnackParams,
   deleteSnackParams,
+  snacksQueryParams,
 } from '../middlewares/snacks.middlewares'
 
 export async function snacksRoutes(app: FastifyInstance) {
@@ -36,5 +39,16 @@ export async function snacksRoutes(app: FastifyInstance) {
     '/:id',
     { preHandler: [deleteSnackParams, checkSnackExists] },
     deleteSnack,
+  )
+
+  // Buscar item pelo id
+  app.get('/:id', getSnackById)
+
+  app.get(
+    '/',
+    {
+      preHandler: [snacksQueryParams],
+    },
+    getSnacks,
   )
 }
