@@ -1,6 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { z, ZodError } from 'zod'
-import { knex } from '../database'
+import { z } from 'zod'
+
+import { routeSchemaValidation } from '../utils/route-shema-validation'
+import { isUserExisting } from './global.middlewares'
 
 const bodySchema = z.object({
   name: z.string(),
@@ -10,41 +12,23 @@ const bodySchema = z.object({
 
 export type UserBody = z.infer<typeof bodySchema>
 
+// Valida o body recebido
 export async function newUserParams(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  try {
-    bodySchema.parse(request.body)
-  } catch (error) {
-    if (error instanceof ZodError) {
-      const errors = error.issues.map((issue) => `${issue.message}`)
-
-      // Retorna os erros para o usário
-      return reply.status(400).send({
-        error: errors,
-      })
-    } else {
-      // Caso tenha um erro não previsto
-      return reply.status(500).send(error)
-    }
-  }
+  routeSchemaValidation(bodySchema, request.body, reply)
 }
 
+// Verifica se usuário ja existe
 export async function checkUserExists(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
   const body = request.body as UserBody
-  const response = await knex('users')
-    .where({
-      name: body.name,
-      email: body.email,
-    })
-    .first()
 
-  if (response) {
-    reply.status(400).send({
+  if (await isUserExisting(body.name, body.email)) {
+    return reply.status(400).send({
       error: 'existing user with "name" and "email" registered.',
     })
   }
@@ -55,6 +39,7 @@ export interface LoginRequest extends FastifyRequest {
   email?: string
 }
 
+// Valida as credencias do login
 export async function loginParams(request: LoginRequest, reply: FastifyReply) {
   const authHeader = request.headers.authorization
 
